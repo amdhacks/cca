@@ -1,0 +1,57 @@
+Sqoop
+
+--List-databases
+
+sqoop list-databases \
+--connect="jdbc:mysql://nn01.itversity.com:3306/" \
+--username=retail_dba \
+--password=itversity
+
+--List tables
+sqoop list-tables \
+  --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+  --username retail_dba \
+  --password itversity \
+
+
+--Eval Command to fire a query on MYSQL directly using sqoop
+sqoop eval \
+  --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+  --username retail_dba \
+  --password itversity \
+  --query "select count(1) from order_items"
+  
+--To import all tables from MYSQL to HDFS  
+--First Make a directory on HDFS where tables will be imported.
+
+hadoop fs -mkdir /user/rajsharmaplus/sqoop_import
+
+--Next import all tables in database retail_db  
+  
+sqoop import-all-tables \
+-m 1 \
+--connect  "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+--username=retail_dba \
+--password=itversity \
+--warehouse-dir=/user/rajsharmaplus/sqoop_import
+
+--Import all tables using sqoop-import into existing hive database (retail_db)()MYSQL to HIVE)
+
+
+sqoop import-all-tables \
+--m 1 \
+--connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+--username=retail_dba \
+--password=itversity \
+--hive-import \
+--hive-overwrite \
+--create-hive-table \
+--outdir java_files \
+--hive-database sqoop_import_lab
+
+--Validate import of tables from MYSQL to HIVE using below command:
+
+hive -e "use sqoop_import_lab; SHOW TABLES; SELECT * FROM departments;"
+
+--Import single table departments using sqoop-import into HDFS location /user/cloudera/departments
+
