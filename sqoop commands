@@ -55,3 +55,13 @@ hive -e "use sqoop_import_lab; SHOW TABLES; SELECT * FROM departments;"
 
 --Import single table departments using sqoop-import into HDFS location /user/cloudera/departments
 
+--Avro files-http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/
+--Sequence Files-SequenceFile is a flat file consisting of binary key/value pairs. It is extensively used in MapReduce as input/output formats.
+It is also worth noting that, internally, the temporary outputs of maps are stored using SequenceFile.
+
+
+--Parquet Files:Apache Parquet is a columnar storage format available to any project in the Hadoop ecosystem, 
+regardless of the choice of data processing framework, data model or programming language.
+
+
+
