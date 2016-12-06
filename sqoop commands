@@ -86,3 +86,37 @@ sqoop export --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
 --num-mappers 2 \
 --outdir java_files	   \
 
+
+
+
+--Change the delimiter and file format of data during import using Sqoop
+ 
+
+CREATE DATABASE IF NOT EXISTS retail_stage_lab;
+USE retail_stage;
+CREATE TABLE departments (
+department_id INT,
+department_name STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+SHOW TABLES;
+
+---------
+
+--Change field delimter to "|"  while importing table departments to HDFS
+sqoop import \
+--connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+--username=retail_dba \
+--password=itversity \
+--table departments \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n' \
+--hive-home /apps/hive/warehouse/ \
+--hive-import \
+--hive-overwrite \
+--hive-table departments \
+--hive-database retail_stage_lab \
+--outdir java_files \
+
+
