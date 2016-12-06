@@ -64,4 +64,25 @@ It is also worth noting that, internally, the temporary outputs of maps are stor
 regardless of the choice of data processing framework, data model or programming language.
 
 
+-----Export to MYSQL from HDFS and HIVE------------
+
+
+
+mysql -u retail_dba -h nn01.itversity.com -p itversity;
+CREATE TABLE departments_export_lab AS SELECT * FROM retail_db.departments WHERE 1=2;
+
+
+--------------------------------------------
+--The following command connects to mysql and loads data to mysql(exports to mysql) from HDFS
+  
+	   
+sqoop export --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+--username retail_dba \
+--password itversity \
+--table departments_export_lab  \
+--export-dir /user/rajsharmaplus/sqoop_import/departments \
+--input-fields-terminated-by ',' \
+--input-lines-terminated-by '\n' \
+--num-mappers 2 \
+--outdir java_files	   \
 
