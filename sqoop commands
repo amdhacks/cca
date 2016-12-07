@@ -119,4 +119,48 @@ sqoop import \
 --hive-database retail_stage_lab \
 --outdir java_files \
 
+----------------------------------------
 
+--Sample code to import data using different file formats to HDFS from mysql
+
+sqoop import \
+  --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+  --username=retail_dba \
+  --password=itversity \
+  --table departments \
+  --as-textfile \
+  --target-dir=/user/rajsharmaplus/sqoop_import/departments \
+  --driver com.mysql.jdbc.Driver \
+
+  
+--Sample code to import data using different file formats to HDFS from mysql in sequence format
+
+
+  
+sqoop import -Dmapreduce.job.user.classpath.first=true -Dhadoop.security.credential.provider.path=jceks://x.jceks \
+--connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+--username=retail_dba \
+--password=itversity \
+--table departments \
+--as-avrodatafile \
+--target-dir=/user/rajsharmaplus/sqoop_import/departments \
+
+
+hadoop fs -put sqoop_import_departments.avsc /user/cloudera
+CREATE EXTERNAL TABLE departments_lab 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' 
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat' 
+LOCATION 'hdfs:///user/rajsharmaplus/sqoop_import/departments' 
+TBLPROPERTIES ('avro.schema.url'='hdfs:///user/rajsharmaplus/hive/departments.avsc');
+
+--Code to import data in parquet file format, available in only latest versions
+sqoop import \
+  --connect "jdbc:mysql://nn01.itversity.com:3306/retail_db" \
+  --username=retail_dba \
+  --password=itversity \
+  --table departments \
+  --as-parquetfile \
+  --target-dir=/user/rajsharmaplus/sqoop_import/departments 
+  
+  
