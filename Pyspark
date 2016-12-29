@@ -1,1 +1,55 @@
 
+##conf "spark.ui.port=10111" 
+##pyspark --conf "spark.ui.port=10105"
+##Read a text file and check its contents
+from pyspark import SparkContext
+
+dataRDD = sc.textFile("/user/rajsharmaplus/spark/testfile.txt")
+for line in dataRDD.collect():
+    print(line)
+
+print(dataRDD.count())
+
+dataRDD.saveAsTextFile("/user/cloudera/pyspark/departments")
+
+dataRDD.map(lambda x: (None, x)).saveAsSequenceFile("/user/rajsharmaplus/sqoop_import/departmentsSeq1")
+#dataRDD.map(lambda x: tuple(x.split(",", 1))).saveAsSequenceFile("/user/rajsharmaplus/sqoop_import/departmentsSeq2")
+#dataRDD.map(lambda x: tuple(x.split(",", 1))).saveAsSequenceFile("/user/rajsharmaplus/sqoop_import/orders1")
+
+
+#reading sequence file
+data = sc.sequenceFile("/user/rajsharmaplus/sqoop_import/departmentsSeq1")
+for rec in data.collect():print(rec)
+
+
+
+#Code snippet to read data from sequence files with key
+data = sc.sequenceFile("/user/rajsharmaplus/sqoop_import/departmentsSeq1", "org.apache.hadoop.io.IntWritable", "org.apache.hadoop.io.Text")
+for rec in data.collect():print(rec)
+
+#Code snippet to read data from hive tables in hive context. In 1.2.x, it might not run.
+from pyspark.sql import HiveContext
+sqlContext = HiveContext(sc)
+depts = sqlContext.sql("select * from departments")
+for rec in depts.collect(): print(rec)
+
+##Word Count Program
+#Reading data from HDFS location
+from pyspark import SparkContext, SparkConf
+conf = SparkConf().setAppName("pyspark")
+sc = SparkContext(conf=conf)
+
+data = sc.textFile("/user/rajsharmaplus/spark/wordcount_ip")
+#Flatten each line into multiple words using " " (space) as delimiter.
+dataFlatMap = data.flatMap(lambda x: x.split(" "))
+#Associate value 1 for each of the input word to map function.
+dataMap = dataFlatMap.map(lambda x: (x, 1))
+#Aggregating using key (which are nothing but all unique words)
+dataReduceByKey = dataMap.reduceByKey(lambda x,y: x + y)
+#Saving to HDFS
+dataReduceByKey.saveAsTextFile("/user/rajsharmaplus/spark/sk_wordcount_out1")
+#Validating the data set
+for i in dataReduceByKey.collect():print(i)
+
+
+	
