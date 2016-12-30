@@ -51,5 +51,45 @@ dataReduceByKey.saveAsTextFile("/user/rajsharmaplus/spark/sk_wordcount_out1")
 #Validating the data set
 for i in dataReduceByKey.collect():print(i)
 
+#Extract the key from orders and order_items (using map)
+#Join the orders and order_items
+#Get revenue per order item per day
+#Get order count per date from order_items (aggregation). As there are orders which do not have corresponding records in order_items, we cannot get count using order table. We need to join order_items with orders to get total number of orders per day.
+#Get revenue per day from joined data
+
+#Reading the data from both orders and order_items
+from pyspark import SparkContext, SparkConf
+conf = SparkConf().setAppName("pyspark")
+sc = SparkContext(conf=conf)
+ordersRDD = sc.textFile("/user/rajsharmaplus/sqoop_import/orders")
+orderItemsRDD = sc.textFile("/user/rajsharmaplus/sqoop_import/order_items")
+
+#Read the data from orders and order_items
+ordersParsedRDD = ordersRDD.map(lambda rec: (int(rec.split(",")[0]), rec))
+orderItemsParsedRDD = orderItemsRDD.map(lambda rec: (int(rec.split(",")[1]), rec))
+
+#Join data sets using spark transformation join
+ordersJoinOrderItems = orderItemsParsedRDD.join(ordersParsedRDD)
+revenuePerOrderPerDay = ordersJoinOrderItems.map(lambda t: (t[1][1].split(",")[1], float(t[1][0].split(",")[4])))
+
+ordersPerDay = ordersJoinOrderItems.map(lambda rec: rec[1][1].split(",")[1] + "," + str(rec[0])).distinct()
+#Problem statement: get the revenue and number of orders from order_items on daily basis. Here are the steps.
+ordersPerDayParsedRDD = ordersPerDay.map(lambda rec: (rec.split(",")[0], 1))
+totalOrdersPerDay = ordersPerDayParsedRDD.reduceByKey(lambda x, y: x + y)
+
+totalRevenuePerDay = revenuePerOrderPerDay.reduceByKey( 
+lambda total1, total2: total1 + total2 
+)
+
+
+for data in totalRevenuePerDay.collect():
+  print(data)
+  
+finalJoinRDD = totalOrdersPerDay.join(totalRevenuePerDay)
+for data in finalJoinRDD.take(5):
+  print(data)  
+  
+
+
 
 	
